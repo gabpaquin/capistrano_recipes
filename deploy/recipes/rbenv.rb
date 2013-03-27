@@ -2,10 +2,17 @@ set_default :ruby_version, "1.9.3-p194"
 set_default :rbenv_bootstrap, "bootstrap-ubuntu-12-04"
 
 namespace :rbenv do
-  desc "Install rbenv, Ruby, and the Bundler gem"
-  task :install, roles: :app do
+  desc "Install rbenv and ruby dependencies"
+  task :pre_install, roles: :app do
     run "#{sudo} apt-get -y install curl git-core"
     run "#{sudo} apt-get -y install make"
+    run "#{sudo} apt-get -y install build-essential"
+    run "#{sudo} apt-get -y install libxml2 libxml2-dev libxslt1-dev"
+  end
+  before "rbenv:install", "rbenv:preinstall"
+
+  desc "Install rbenv, Ruby, and the Bundler gem"
+  task :install, roles: :app do
     run "curl -L https://raw.github.com/fesplugas/rbenv-installer/master/bin/rbenv-installer | bash"
     bashrc = <<-BASHRC
 if [ -d $HOME/.rbenv ]; then 

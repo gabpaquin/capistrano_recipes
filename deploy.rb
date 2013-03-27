@@ -17,4 +17,4 @@ task :backup, :roles => :web do
   run "#{deploy_to}/backups/backup_db.sh"
 end
 
-before 'deploy:update_code', :backup
+#before 'deploy:update_code', :backup
