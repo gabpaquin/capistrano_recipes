@@ -8,9 +8,12 @@ def set_default(name, *args, &block)
 end
 
 namespace :deploy do
-  desc "Install everything onto the server"
+  desc "Install everything onto the server and dependencies"
   task :install do
     run "#{sudo} apt-get -y update"
     run "#{sudo} apt-get -y install python-software-properties"
+    run "#{sudo} apt-get -y install make"
+    run "#{sudo} apt-get -y install build-essential"    
+    # run "#{sudo} apt-get install libxml2-dev libxslt1-dev imagemagick" to be run manually
   end
 end

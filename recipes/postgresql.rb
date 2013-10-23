@@ -39,4 +39,28 @@ namespace :postgresql do
     run "ln -nfs #{shared_path}/config/database.yml #{release_path}/config/database.yml"
   end
   after "deploy:finalize_update", "postgresql:symlink"
+
+
+  def cmd_with_pwd(command, password)
+    run(command) do |channel, stream, output|
+      channel.send_data("#{password}\n") if output
+    end
+  end
+
+  desc "Download SQL dump"
+  task :download_sql_dump, roles: :app do
+    db_pwd = Capistrano::CLI.password_prompt "Enter database password: "
+    cmd_with_pwd "pg_dump --clean -U #{postgresql_user} #{postgresql_database} -f #{current_path}/db/#{postgresql_database}_dump.sql", "#{db_pwd}"
+    download "#{current_path}/db/#{postgresql_database}_dump.sql", "db/#{postgresql_database}_dump.sql"
+  end
+
+  desc "Import SQL dump"
+  task :import_sql_dump, roles: :app do
+    db_pwd = Capistrano::CLI.password_prompt "Enter database password: "
+    cmd_with_pwd "dropdb -U #{postgresql_user} #{postgresql_database}", "#{db_pwd}"
+    run %Q{#{sudo} -u postgres psql -c "create database #{postgresql_database} owner content_api;"}
+    cmd_with_pwd "psql -U #{postgresql_user} -d #{postgresql_database} < #{current_path}/db/#{application}_development_dump.sql", "#{db_pwd}"
+  end
+  after "postgresql:import_sql_dump", "unicorn:start"
+  before "postgresql:import_sql_dump", "unicorn:stop"
 end

@@ -4,8 +4,8 @@ upstream unicorn_<%= application %> {
 
 server {
   #check which address we want the server to listen to
-  listen 80 default deferred;
-  # server_name example.com;
+  #listen 80;
+  server_name aj.satpathway.com;
   # root <%= current_path %>/public;
   root <%= current_path %>/public;
 
